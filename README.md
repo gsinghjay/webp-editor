@@ -1,23 +1,42 @@
 # WebP Image Editor
 
-A modern web application for converting and editing images to WebP format using FastAPI and vanilla JavaScript.
+A modern web application and API for converting and editing images to WebP format using FastAPI and vanilla JavaScript.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688.svg)](https://fastapi.tiangolo.com)
 
 ## Features
 
 - 🖼️ Convert various image formats to WebP
-- 🎨 Adjust conversion quality settings
-- 📱 Responsive design with Bootstrap
-- 🖱️ Drag and drop file upload
+- 🎨 Multiple resize modes:
+  - Exact size
+  - Percentage scaling
+  - Preset dimensions
+  - Fit within dimensions
+  - Fill and crop
+- 📱 Common platform presets:
+  - HD (1280x720)
+  - Full HD (1920x1080)
+  - QHD (2560x1440)
+  - Instagram (1080x1080)
+  - Twitter (1200x675)
+  - Facebook (1200x630)
+  - Thumbnail (150x150)
+- 🎯 High-quality WebP conversion with adjustable quality
+- 📚 Interactive API documentation (Swagger UI)
+- 🖱️ Modern drag-and-drop interface
 - 👁️ Live image preview
-- 📦 Uses official libwebp tools for optimal conversion
+- 📦 Uses official libwebp tools
 
 ## Prerequisites
 
 - Python 3.8+
 - libwebp 1.5.0 or higher
 - pip (Python package manager)
+- Nginx (for production deployment)
 
-## Installation
+## Quick Start
 
 1. Clone the repository:
 ```bash
@@ -36,65 +55,104 @@ source venv/bin/activate  # On Windows, use: venv\Scripts\activate
 pip install -r app/requirements.txt
 ```
 
-4. Ensure libwebp binaries are available in the `libwebp-1.5.0-linux-aarch64/bin/` directory.
-
-## Usage
-
-1. Start the FastAPI server:
+4. Run the development server:
 ```bash
 python app/main.py
 ```
 
-2. Open your browser and navigate to `http://localhost:8000`
+5. Open your browser and navigate to:
+   - Web Interface: `http://localhost:8000`
+   - API Documentation: `http://localhost:8000/docs`
+   - Alternative API Docs: `http://localhost:8000/redoc`
 
-3. Use the web interface to:
-   - Drag and drop or select images for conversion
-   - Adjust quality settings using the slider
-   - Preview images before conversion
-   - Download converted WebP files
+## API Documentation
 
-## Project Structure
+### Endpoints
 
-```
-webp-editor/
-├── app/
-│   ├── static/
-│   │   ├── js/
-│   │   ├── css/
-│   │   ├── img/
-│   │   └── uploads/
-│   ├── templates/
-│   │   └── index.html
-│   ├── main.py
-│   └── requirements.txt
-├── libwebp-1.5.0-linux-aarch64/
-│   └── bin/
-│       ├── cwebp
-│       ├── dwebp
-│       └── ...
-└── README.md
-```
-
-## API Endpoints
-
-### GET /
+#### GET /
 - Renders the main application interface
 - Returns: HTML page
 
-### POST /upload
-- Handles image upload and WebP conversion
+#### POST /edit
+- Edit image with various resize options
 - Parameters:
   - `file`: Image file (multipart/form-data)
+  - `resize_mode`: One of ["exact", "percentage", "preset", "fit", "fill"]
+  - `width`: Target width in pixels (for exact, fit, fill modes)
+  - `height`: Target height in pixels (for exact, fit, fill modes)
+  - `percentage`: Scale percentage 1-200 (for percentage mode)
+  - `preset`: Predefined dimensions (for preset mode)
+- Returns: JSON
+  ```json
+  {
+    "success": true,
+    "message": "Image edited successfully",
+    "image_path": "/static/uploads/image.jpg",
+    "width": 1920,
+    "height": 1080
+  }
+  ```
+
+#### POST /convert
+- Convert image to WebP format
+- Parameters:
+  - `file`: Image file (multipart/form-data)
+  - `quality`: WebP quality 0-100 (default: 75)
 - Returns: JSON
   ```json
   {
     "success": true,
     "message": "Image converted successfully",
-    "webp_path": "/static/uploads/image.webp"
+    "webp_path": "/static/uploads/image.webp",
+    "width": 1920,
+    "height": 1080
   }
   ```
 
+## Production Deployment
+
+1. Set up Nginx:
+```bash
+sudo cp deployment/nginx.conf /etc/nginx/sites-available/webp-editor
+sudo ln -s /etc/nginx/sites-available/webp-editor /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+2. Set up systemd service:
+```bash
+sudo cp deployment/webp-editor.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable webp-editor
+sudo systemctl start webp-editor
+```
+
+3. Check service status:
+```bash
+sudo systemctl status webp-editor
+```
+
 ## Development
+
+### Project Structure
+```
+webp-editor/
+├── app/
+│   ├── static/
+│   │   ├── uploads/    # Processed images
+│   ├── templates/
+│   │   └── index.html  # Frontend interface
+│   ├── main.py         # FastAPI application
+│   └── requirements.txt
+├── deployment/
+│   ├── nginx.conf
+│   ├── webp-editor.service
+│   └── deploy.sh
+├── .github/
+│   └── workflows/
+│       └── deploy.yml
+└── README.md
+```
 
 ### Running Tests
 ```bash
@@ -102,19 +160,34 @@ webp-editor/
 ```
 
 ### Code Style
-This project follows PEP 8 guidelines for Python code. Use a linter to ensure compliance.
+This project follows:
+- PEP 8 for Python code
+- Conventional Commits for git commits
+- OpenAPI standards for API documentation
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create your feature branch:
+```bash
+git checkout -b feature/amazing-feature
+```
+
+3. Commit your changes:
+```bash
+git commit -m "feat: Add some amazing feature"
+```
+
+4. Push to the branch:
+```bash
+git push origin feature/amazing-feature
+```
+
 5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
