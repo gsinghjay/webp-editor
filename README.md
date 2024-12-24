@@ -148,9 +148,6 @@ webp-editor/
 │   ├── nginx.conf
 │   ├── webp-editor.service
 │   └── deploy.sh
-├── .github/
-│   └── workflows/
-│       └── deploy.yml
 └── README.md
 ```
 
