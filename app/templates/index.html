@@ -28,10 +28,25 @@
             text-align: center;
             background: #f8f9fa;
             cursor: pointer;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .drop-zone.dragover {
             background: #e9ecef;
             border-color: #28a745;
+        }
+        .nav-tabs .nav-link {
+            cursor: pointer;
+        }
+        .action-buttons {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1rem 0;
+            border-top: 1px solid #dee2e6;
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -39,38 +54,124 @@
     <div class="container mt-5">
         <h1 class="text-center mb-4">WebP Image Editor</h1>
         
-        <!-- Upload Section -->
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-body">
+                        <!-- Upload Section -->
                         <div class="drop-zone" id="dropZone">
-                            <p class="mb-0">Drag and drop images here or click to select</p>
-                            <input type="file" id="fileInput" class="d-none" accept="image/*" multiple>
+                            <div>
+                                <p class="mb-0">Drag and drop images here or click to select</p>
+                                <input type="file" id="fileInput" class="d-none" accept="image/*" multiple>
+                            </div>
                         </div>
                         
                         <!-- Preview Section -->
-                        <div id="previewSection" class="mt-4">
+                        <div id="previewSection" class="mt-4 d-none">
                             <h5>Preview:</h5>
-                            <div id="imagePreview" class="preview-container d-none">
+                            <div id="imagePreview" class="preview-container">
                                 <img id="previewImage" class="preview-image" src="" alt="Preview">
                             </div>
-                        </div>
 
-                        <!-- Conversion Options -->
-                        <div class="mt-4">
-                            <h5>Conversion Options:</h5>
-                            <div class="mb-3">
-                                <label for="quality" class="form-label">Quality (0-100):</label>
-                                <input type="range" class="form-range" id="quality" min="0" max="100" value="75">
-                                <span id="qualityValue">75</span>
+                            <!-- Tabs -->
+                            <ul class="nav nav-tabs mt-4" id="imageTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button">
+                                        Edit Image
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="convert-tab" data-bs-toggle="tab" data-bs-target="#convert" type="button">
+                                        Convert to WebP
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Tab Content -->
+                            <div class="tab-content mt-3">
+                                <!-- Edit Tab -->
+                                <div class="tab-pane fade show active" id="edit">
+                                    <div class="mb-3">
+                                        <h6>Resize Options:</h6>
+                                        <!-- Resize Mode Selection -->
+                                        <div class="mb-3">
+                                            <label for="resizeMode" class="form-label">Resize Mode:</label>
+                                            <select class="form-select" id="resizeMode">
+                                                <option value="exact">Exact Size</option>
+                                                <option value="percentage">Percentage</option>
+                                                <option value="preset">Preset Size</option>
+                                                <option value="fit">Fit Within</option>
+                                                <option value="fill">Fill & Crop</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Exact/Fit/Fill Size Controls -->
+                                        <div id="dimensionsControl" class="mb-3">
+                                            <div class="row g-2">
+                                                <div class="col">
+                                                    <label for="width" class="form-label">Width:</label>
+                                                    <input type="number" class="form-control" id="width" placeholder="Width" min="1">
+                                                </div>
+                                                <div class="col">
+                                                    <label for="height" class="form-label">Height:</label>
+                                                    <input type="number" class="form-control" id="height" placeholder="Height" min="1">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Percentage Control -->
+                                        <div id="percentageControl" class="mb-3 d-none">
+                                            <label for="percentage" class="form-label">Scale Percentage:</label>
+                                            <div class="d-flex align-items-center">
+                                                <input type="range" class="form-range flex-grow-1 me-2" id="percentage" min="1" max="200" value="100">
+                                                <span id="percentageValue" class="badge bg-primary">100%</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Preset Size Control -->
+                                        <div id="presetControl" class="mb-3 d-none">
+                                            <label for="preset" class="form-label">Preset Size:</label>
+                                            <select class="form-select" id="preset">
+                                                <option value="HD">HD (1280x720)</option>
+                                                <option value="FULL_HD">Full HD (1920x1080)</option>
+                                                <option value="QHD">QHD (2560x1440)</option>
+                                                <option value="INSTAGRAM">Instagram (1080x1080)</option>
+                                                <option value="TWITTER">Twitter (1200x675)</option>
+                                                <option value="FACEBOOK">Facebook (1200x630)</option>
+                                                <option value="THUMBNAIL">Thumbnail (150x150)</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Original Size Info -->
+                                        <div class="mb-3">
+                                            <small class="text-muted">
+                                                Original size: <span id="originalSize">-</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Convert Tab -->
+                                <div class="tab-pane fade" id="convert">
+                                    <div class="mb-3">
+                                        <h6>WebP Options:</h6>
+                                        <label for="quality" class="form-label">Quality (0-100):</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="range" class="form-range" id="quality" min="0" max="100" value="75">
+                                            <span id="qualityValue" class="badge bg-primary">75</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <div class="d-flex gap-2">
+                                    <button id="applyEditBtn" class="btn btn-primary flex-grow-1">Apply Changes</button>
+                                    <button id="convertBtn" class="btn btn-success flex-grow-1" disabled>Convert to WebP</button>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Convert Button -->
-                        <button id="convertBtn" class="btn btn-primary mt-3 w-100" disabled>
-                            Convert to WebP
-                        </button>
                     </div>
                 </div>
 
@@ -86,14 +187,29 @@
     <!-- Custom JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
             const previewImage = document.getElementById('previewImage');
+            const previewSection = document.getElementById('previewSection');
             const imagePreview = document.getElementById('imagePreview');
             const convertBtn = document.getElementById('convertBtn');
+            const applyEditBtn = document.getElementById('applyEditBtn');
             const qualityInput = document.getElementById('quality');
             const qualityValue = document.getElementById('qualityValue');
             const results = document.getElementById('results');
+            const resizeMode = document.getElementById('resizeMode');
+            const dimensionsControl = document.getElementById('dimensionsControl');
+            const percentageControl = document.getElementById('percentageControl');
+            const presetControl = document.getElementById('presetControl');
+            const percentage = document.getElementById('percentage');
+            const percentageValue = document.getElementById('percentageValue');
+            const preset = document.getElementById('preset');
+            const originalSize = document.getElementById('originalSize');
+            const widthInput = document.getElementById('width');
+            const heightInput = document.getElementById('height');
+            let originalAspectRatio = 1;
+            let editedImage = null;
 
             // Handle drag and drop
             dropZone.addEventListener('dragover', (e) => {
@@ -119,10 +235,40 @@
                 handleFiles(e.target.files);
             });
 
+            // Quality slider
             qualityInput.addEventListener('input', (e) => {
                 qualityValue.textContent = e.target.value;
             });
 
+            // Handle resize mode changes
+            resizeMode.addEventListener('change', () => {
+                // Hide all controls first
+                dimensionsControl.classList.add('d-none');
+                percentageControl.classList.add('d-none');
+                presetControl.classList.add('d-none');
+
+                // Show relevant controls based on mode
+                switch (resizeMode.value) {
+                    case 'exact':
+                    case 'fit':
+                    case 'fill':
+                        dimensionsControl.classList.remove('d-none');
+                        break;
+                    case 'percentage':
+                        percentageControl.classList.remove('d-none');
+                        break;
+                    case 'preset':
+                        presetControl.classList.remove('d-none');
+                        break;
+                }
+            });
+
+            // Update percentage value display
+            percentage.addEventListener('input', (e) => {
+                percentageValue.textContent = `${e.target.value}%`;
+            });
+
+            // Handle file selection
             function handleFiles(files) {
                 if (files.length > 0) {
                     const file = files[0];
@@ -130,38 +276,151 @@
                         const reader = new FileReader();
                         reader.onload = (e) => {
                             previewImage.src = e.target.result;
-                            imagePreview.classList.remove('d-none');
+                            previewSection.classList.remove('d-none');
                             convertBtn.disabled = false;
+                            editedImage = null;
+
+                            // Get original image dimensions
+                            const img = new Image();
+                            img.onload = () => {
+                                originalAspectRatio = img.width / img.height;
+                                widthInput.value = img.width;
+                                heightInput.value = img.height;
+                                originalSize.textContent = `${img.width}x${img.height}`;
+                            };
+                            img.src = e.target.result;
                         };
                         reader.readAsDataURL(file);
                     }
                 }
             }
 
-            convertBtn.addEventListener('click', async () => {
-                const file = fileInput.files[0];
-                if (!file) return;
-
+            // Handle edit application
+            applyEditBtn.addEventListener('click', async () => {
                 const formData = new FormData();
-                formData.append('file', file);
-
+                
                 try {
+                    // Get the current image data
+                    const response = await fetch(previewImage.src);
+                    const blob = await response.blob();
+                    formData.append('file', blob, 'image.jpg');
+                    
+                    // Add resize parameters
+                    formData.append('resize_mode', resizeMode.value);
+                    switch (resizeMode.value) {
+                        case 'exact':
+                        case 'fit':
+                        case 'fill':
+                            formData.append('width', widthInput.value);
+                            formData.append('height', heightInput.value);
+                            break;
+                        case 'percentage':
+                            formData.append('percentage', percentage.value);
+                            break;
+                        case 'preset':
+                            formData.append('preset', preset.value);
+                            break;
+                    }
+
+                    applyEditBtn.disabled = true;
+                    applyEditBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Applying...';
+
+                    const uploadResponse = await fetch('/edit', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await uploadResponse.json();
+                    console.log('Server response:', data);
+                    
+                    if (data.success) {
+                        // Update preview with edited image
+                        const editedUrl = data.image_path + `?t=${Date.now()}`;
+                        console.log('Loading edited image from:', editedUrl);
+                        previewImage.src = editedUrl;
+                        editedImage = editedUrl;
+                        
+                        // Show success message
+                        results.innerHTML = `
+                            <div class="alert alert-success alert-dismissible fade show">
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                <h5>Edit Applied Successfully!</h5>
+                                <p>New dimensions: ${data.width}x${data.height} pixels</p>
+                            </div>
+                        `;
+                    } else {
+                        results.innerHTML = `
+                            <div class="alert alert-danger">
+                                <h5>Edit Failed</h5>
+                                <p>${data.message}</p>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Edit error:', error);
+                    results.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5>Error</h5>
+                            <p>An error occurred while applying edits.</p>
+                            <p class="text-muted small">${error.message}</p>
+                        </div>
+                    `;
+                } finally {
+                    applyEditBtn.disabled = false;
+                    applyEditBtn.textContent = 'Apply Changes';
+                }
+            });
+
+            // Handle WebP conversion
+            convertBtn.addEventListener('click', async () => {
+                const formData = new FormData();
+                
+                try {
+                    // Use edited image if available, otherwise use original
+                    if (editedImage) {
+                        const response = await fetch(editedImage);
+                        const blob = await response.blob();
+                        formData.append('file', blob, 'image.jpg');
+                    } else {
+                        const file = fileInput.files[0];
+                        if (!file) return;
+                        formData.append('file', file);
+                    }
+                    
+                    formData.append('quality', qualityInput.value);
+
                     convertBtn.disabled = true;
                     convertBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Converting...';
 
-                    const response = await fetch('/upload', {
+                    const response = await fetch('/convert', {
                         method: 'POST',
                         body: formData
                     });
 
                     const data = await response.json();
+                    console.log('Server response:', data);
                     
                     if (data.success) {
+                        const webpUrl = data.webp_path + `?t=${Date.now()}`;
+                        console.log('Loading converted image from:', webpUrl);
+                        
                         results.innerHTML = `
                             <div class="alert alert-success">
                                 <h5>Conversion Successful!</h5>
                                 <p>Your image has been converted to WebP format.</p>
-                                <a href="${data.webp_path}" class="btn btn-sm btn-primary" download>Download WebP</a>
+                                <p>Final dimensions: ${data.width}x${data.height} pixels</p>
+                                <div class="preview-container mb-3">
+                                    <img src="${webpUrl}" class="preview-image" alt="Converted WebP" 
+                                         onerror="this.onerror=null; this.src=''; 
+                                                 console.error('Failed to load image:', webpUrl);
+                                                 this.parentElement.innerHTML='<p class=text-danger>Failed to load preview. Try downloading directly.</p>';">
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="${webpUrl}" class="btn btn-primary" download>Download WebP</a>
+                                    <button onclick="window.open('${webpUrl}', '_blank')" class="btn btn-outline-primary">
+                                        View Full Size
+                                    </button>
+                                </div>
                             </div>
                         `;
                     } else {
@@ -173,10 +432,12 @@
                         `;
                     }
                 } catch (error) {
+                    console.error('Conversion error:', error);
                     results.innerHTML = `
                         <div class="alert alert-danger">
                             <h5>Error</h5>
                             <p>An error occurred during conversion.</p>
+                            <p class="text-muted small">${error.message}</p>
                         </div>
                     `;
                 } finally {
@@ -184,6 +445,17 @@
                     convertBtn.textContent = 'Convert to WebP';
                 }
             });
+
+            // Show/hide appropriate buttons based on active tab
+            document.getElementById('imageTabs').addEventListener('shown.bs.tab', function (event) {
+                const activeTabId = event.target.id;
+                applyEditBtn.style.display = activeTabId === 'edit-tab' ? 'block' : 'none';
+                convertBtn.style.display = activeTabId === 'convert-tab' ? 'block' : 'none';
+            });
+
+            // Initial button visibility
+            applyEditBtn.style.display = 'block';
+            convertBtn.style.display = 'none';
         });
     </script>
 </body>
