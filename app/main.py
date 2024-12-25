@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.openapi.utils import get_openapi
 import os
 import subprocess
@@ -77,13 +77,13 @@ app = FastAPI(
 )
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="/app/static"), name="static")
 
 # Templates
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="/app/templates")
 
 # Ensure upload directory exists
-UPLOAD_DIR = Path("app/static/uploads")
+UPLOAD_DIR = Path("/app/static/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 def resize_image(img: Image.Image, resize_mode: ResizeMode, width: Optional[int] = None, 
@@ -301,10 +301,7 @@ async def convert_to_webp(
             f.write(content)
         
         # Convert to WebP using cwebp
-        cwebp_path = "libwebp-1.5.0-linux-aarch64/bin/cwebp"
-        
-        # Ensure cwebp is executable
-        os.chmod(cwebp_path, 0o755)
+        cwebp_path = "cwebp"  # Use system installed cwebp
         
         # Build command with quality parameter
         command = [
@@ -363,6 +360,16 @@ async def convert_to_webp(
             "success": False,
             "message": str(e)
         }, status_code=500)
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for container orchestration"""
+    return {"status": "healthy"}
+
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    """Serve favicon"""
+    return FileResponse(os.path.join('/app/static/img', 'favicon.ico'))
 
 def custom_openapi():
     if app.openapi_schema:
