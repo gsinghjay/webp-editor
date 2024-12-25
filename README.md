@@ -111,25 +111,28 @@ python app/main.py
 
 ## Production Deployment
 
-1. Set up Nginx:
+### Docker Deployment
+
+1. Make sure Docker and Docker Compose are installed on your system.
+
+2. Build and start the containers:
 ```bash
-sudo cp deployment/nginx.conf /etc/nginx/sites-available/webp-editor
-sudo ln -s /etc/nginx/sites-available/webp-editor /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
+docker-compose up -d --build
 ```
 
-2. Set up systemd service:
+3. Check the status of the containers:
 ```bash
-sudo cp deployment/webp-editor.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable webp-editor
-sudo systemctl start webp-editor
+docker-compose ps
 ```
 
-3. Check service status:
+4. View logs:
 ```bash
-sudo systemctl status webp-editor
+docker-compose logs -f
+```
+
+5. Stop the services:
+```bash
+docker-compose down
 ```
 
 ## Development
